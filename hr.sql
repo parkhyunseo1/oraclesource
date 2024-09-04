@@ -1,0 +1,175 @@
+-- EMPLOYEES (scott 계정의 emp 테이블 원본)
+-- EMPLOYEES 전체 조회
+SELECT * FROM EMPLOYEES e;
+-- EMPLOYEES 의 first_name, last_name, job_id 조회
+SELECT
+	FIRST_NAME,
+	LAST_NAME,
+	JOB_ID
+FROM
+	EMPLOYEES e ;
+	
+--사원번호가 176 사원의 LAST_NAME, 부서번호 조회
+
+SELECT e.LAST_NAME,e.DEPARTMENT_ID FROM EMPLOYEES e WHERE EMPLOYEE_ID = 176 ;
+
+-- 연봉이 12000 이상 되는 직원들의 LAST_NAME 과 연봉 조회
+
+SELECT e.SALARY ,e.LAST_NAME FROM EMPLOYEES e WHERE SALARY >= 12000;
+
+-- 연봉이 5000에서 12000 범위가 아닌 사람들의 LAST_NAME 과 연봉조회
+
+SELECT SALARY, LAST_NAME FROM EMPLOYEES e WHERE  5000> SALARY OR 12000 < SALARY;
+
+-- 20번 혹은 50번 부서에서 근무하는 사원들의 last_name, 부서번호를 조회 
+-- 단, 이름의 오름차순, 부서의 오름차순으로 정렬
+SELECT
+	e.LAST_NAME,
+	e.DEPARTMENT_ID
+FROM
+	EMPLOYEES e
+WHERE
+	DEPARTMENT_ID IN(20, 50)
+ORDER BY
+	e.LAST_NAME ASC,
+	e.DEPARTMENT_ID DESC ;
+
+-- 커미션을 버는 사원들의 last_name, salary, commission_pct 를 조회
+-- 단, 연봉의 내림차순, 커미션 내림차순으로 정렬
+SELECT
+	e.LAST_NAME,
+	e.SALARY,
+	e.COMMISSION_PCT
+FROM
+	EMPLOYEES e
+WHERE
+	COMMISSION_PCT > 0
+ORDER BY
+	e.SALARY DESC,
+	e.COMMISSION_PCT DESC ;
+
+-- 연봉이 2500,3500,7000이 아니며 job_id 가 SA_REP OR ST_CLERK 인 사원 조회
+SELECT * FROM EMPLOYEES e WHERE SALARY NOT IN(2500,3500,7000) AND e.JOB_ID IN('SA_REP', 'ST_CLERK'); 
+
+--2018/02/20 ~ 2018/05/01 사이에 고용된 직원들의 LAST_NAME, 사번, 고용일자(hire_date) 조회
+SELECT
+	e.LAST_NAME,
+	e.EMPLOYEE_ID,
+	e.HIRE_DATE
+FROM
+	EMPLOYEES e
+WHERE
+	e.HIRE_DATE >= '2018/02/20'
+	AND e.HIRE_DATE <= '2018/05/01' ; 
+
+-- 2015년에 고용된 사원 조회
+	SELECT
+	e.LAST_NAME,
+	e.EMPLOYEE_ID,
+	e.HIRE_DATE
+FROM
+	EMPLOYEES e
+WHERE
+	e.HIRE_DATE >= '2015/01/01'
+	AND e.HIRE_DATE <= '2015/12/31' ;
+
+-- BETWEEN A AND B
+-- 20번 혹은 50번 부서에서 근무하며, 연봉이 5000 ~ 12000 사이인 직원들의
+-- FIRST_NAME, LAST_NAME, 연봉 조회 (연봉 오름차순)
+SELECT
+	E.FIRST_NAME,
+	E.LAST_NAME,
+	E.SALARY
+FROM
+	EMPLOYEES e
+WHERE
+	E.DEPARTMENT_ID IN(20, 50)
+	AND SALARY BETWEEN 5000 AND 12000
+ORDER BY
+	SALARY ;
+
+-- 연봉이 5000 ~ 12000 사이가 아닌 직원들의 정보 조회
+SELECT *FROM EMPLOYEES e WHERE  SALARY NOT BETWEEN 5000 AND 12000;
+
+
+--2018/02/20 ~ 2018/05/01 사이에 고용된 직원들의 LAST_NAME, 사번, 고용일자(hire_date) 조회
+SELECT
+	e.LAST_NAME,
+	e.EMPLOYEE_ID,
+	e.HIRE_DATE
+FROM
+	EMPLOYEES e
+WHERE
+	e.HIRE_DATE BETWEEN '2018/02/20'
+	AND  '2018/05/01' ;
+
+--LIKE
+--LAST_NAME 에 u가 포함되는 사원들의 사번,last_name 조회
+SELECT
+	e.EMPLOYEE_ID,
+	LAST_NAME
+FROM
+	EMPLOYEES e
+WHERE
+	LAST_NAME LIKE '%u%' ;
+--LAST_NAME 의 네번째 글자가 a인 사원들의 사번,last_name 조회
+SELECT
+	e.EMPLOYEE_ID,
+	LAST_NAME
+FROM
+	EMPLOYEES e
+WHERE
+	LAST_NAME LIKE '___a%' ;
+--LAST_NAME 에 a 혹은 e 글자가 포함되는 사원들의 사번,last_name 조회(단 last_name 오름차순)
+SELECT
+	e.EMPLOYEE_ID,
+	LAST_NAME
+FROM
+	EMPLOYEES e
+WHERE
+	LAST_NAME LIKE '%a%'
+	OR LAST_NAME LIKE '%e%'
+ORDER BY
+	LAST_NAME ;
+
+--LAST_NAME 에 a 와 e 글자가 포함되는 사원들의 사번,last_name 조회(단 last_name 오름차순)
+
+SELECT
+	e.EMPLOYEE_ID,
+	LAST_NAME
+FROM
+	EMPLOYEES e
+WHERE
+	LAST_NAME LIKE '%a%'
+	AND LAST_NAME LIKE '%e%'
+ORDER BY
+	LAST_NAME;
+
+-- IS NULL
+-- MANAGER_ID 가 없는 사원들의 LAST_NAME 및 JOB_ID 조회
+SELECT E.LAST_NAME,E.JOB_ID FROM EMPLOYEES e WHERE E.MANAGER_ID IS NULL; 
+
+-- JOB_ID 가 ST_CLERK 가 아닌 사원이 없는 부서 조회
+-- 단, 부서번호가 NULL 인 경우는 제외한다.
+SELECT DISTINCT DEPARTMENT_ID FROM EMPLOYEES e WHERE JOB_ID <> 'ST_CLERK' AND E.DEPARTMENT_ID IS NOT NULL; 
+
+-- COMMISION_PCT 가 NULL 이 아닌 사원들 중에서 COMMISSION = SALARY * COMMISION_PCT를 구한다
+-- 사원번호, FIRST_NAME,JOB_ID와 함께 조회
+SELECT
+	E.EMPLOYEE_ID,
+	E.FIRST_NAME ,
+	E.JOB_ID, SALARY * COMMISSION_PCT AS COMMISSION
+FROM
+	EMPLOYEES e
+WHERE
+	E.COMMISSION_PCT IS NOT NULL;
+
+
+
+
+
+
+
+
+
+
