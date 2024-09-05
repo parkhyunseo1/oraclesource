@@ -458,7 +458,257 @@ FROM EMP e;
 -- 널이 안니면 SAL * 12 + COMM
 -- 널이면 SAL *12
 SELECT E.EMPNO ,E.ENAME ,E.SAL ,E.COMM ,NVL2(COMM,'O','X'),NVL2(COMM,SAL*12+COMM,SAL*12) 
-FROM EMP e;
+FROM EMP e;       
+
+-- DECODE 함수 / CASE 문
+--DECODE(데이터,
+--		조건1, 조건1을 만족할 때 해야 할 것
+--		조건2, 조건2를 만족할 때 해야 할 것
+--		)AS 별칭
+		
+-- JOB 이 MANAGER 라면 SAL * 1.1
+-- JOB 이 SALESMAN 라면 SAL * 1.5
+-- JOB 이 ANALYST 라면 SAL 
+--		 그 외 라면 SAL * 1.03
+
+SELECT
+	E.EMPNO ,
+	E.ENAME ,
+	E.JOB ,
+	E.SAL ,
+	DECODE(JOB, 'MANAGER', E.SAL * 1.1, 'SALESMAN', E.SAL * 1.5, 'ANALYST', E.SAL , E.SAL , E.SAL * 1.03 ) AS UPSAL
+FROM
+	EMP e ;
+
+SELECT
+	E.EMPNO ,
+	E.ENAME ,
+	E.JOB ,
+	E.SAL ,
+	CASE JOB WHEN 'MANAGER' THEN E.SAL * 1.1
+		WHEN 'SALESMAN' THEN E.SAL * 1.5
+		WHEN 'ANALYST' THEN E.SAL
+		ELSE E.SAL * 1.03
+	END AS UPSAL
+FROM
+	EMP e ;
+
+-- COMM 널일때 '해당사항없음'
+-- COMM =0 일때 '수당없음'
+-- COMM >0 일때 '수당 : COMM'
+
+SELECT
+	E.EMPNO ,
+	E.ENAME ,
+	E.COMM, 
+CASE
+		WHEN E.COMM IS NULL THEN '해당사항없음'
+		WHEN E.COMM = 0 THEN '수당없음'
+		WHEN E.COMM> 0 THEN '수당 : ' || E.COMM 
+	END AS COMM_TEXT
+FROM
+	EMP e ;
+FROM
+EMP e ;
+-- EMP 테이블에서 사원들의 월 평균 근무일수는 21.5일이다. 하루 근무시간을 8시간으로 봤을 때
+-- 사원들의 하루급여(DAY_PAY)와 시급(TIME_PAY)를 계산하여 결과를 출력한다
+-- 사번, 이름, SAL, DAY_PAY, TIME_PAY 출력
+-- 단 , 하루급여는 소수점 셋째자리에서 버리고, 시급은 두번째 소수접에서 반올림하기
+SELECT E.EMPNO ,E.ENAME ,E.SAL ,TRUNC(E.SAL/21.5,3) AS DAY_PAY, ROUND((E.SAL/21.5)/24,2) AS TIMEPAY
+FROM EMP e ;
+
+
+-- EMP 테이블에서 사원들은 입사일을 기준으로 3개월이 지난 후 첫 월요일에 정직원이 된다. 사원들의
+-- 정직원이 되는 날짜(R_JOB) 를 YYYY-MM-DD 형식으로 출력한다.
+-- 사번, 이름, 고용일,R_JOB 출력
+SELECT
+	E.EMPNO ,
+	E.ENAME ,
+	E.HIREDATE ,
+	NEXT_DAY(ADD_MONTHS(E.HIREDATE, 3), '월요일') AS R_JOB
+FROM
+	EMP e ;
+
+-- + 추가수당
+-- COMM 이 없으면 'N/A' , 있으면 COMM 출력
+SELECT
+	E.EMPNO ,
+	E.ENAME ,
+	E.HIREDATE ,
+	NEXT_DAY(ADD_MONTHS(E.HIREDATE, 3), '월요일') AS R_JOB,
+	CASE 
+	WHEN E.COMM IS NULL THEN 'N/A'
+	WHEN E.COMM IS NOT NULL THEN E.COMM || ''
+	END AS COMM 
+FROM EMP e ;
+
+--ORA-01722: 수치가 부적합합니다
+--SELECT COMM ,NVL(COMM,'N/A') 
+--FROM EMP e 
+
+--NVL
+SELECT
+	E.EMPNO ,
+	E.ENAME ,
+	E.HIREDATE ,
+	NEXT_DAY(ADD_MONTHS(E.HIREDATE, 3), '월요일') AS R_JOB,
+	NVL(TO_CHAR(COMM),'N/A') AS COMM 
+FROM
+	EMP e ;
+
+-- EMP 테이블의 모든 사원을 대상으로 직속 상관의 사원번호(MGR)를 변환해서 CHG_MGR 에 출력
+-- 사번,이름,MGR,CHG_MGR, 출력
+-- 조건
+-- MGR이 널이면 '0000' / MGR 의 앞 두자리가 75이면 '5555' / 76이면 '6666' / 77이면 '77777'/ 78이면'8888'
+SELECT
+	E.EMPNO,
+	E.ENAME,
+	E.MGR,
+	DECODE(SUBSTR(TO_CHAR(E.MGR), 1, 2), 
+	NULL, '0000',
+	'75','5555',
+	'76','6666',
+	'77','7777',
+	'78','8888',
+	SUBSTR(TO_CHAR(E.MGR),1) 
+	)AS CHG_MGR
+ FROM EMP e ;
+
+
+SELECT E.EMPNO ,
+E.ENAME ,
+E.MGR ,
+CASE 
+	WHEN E.MGR IS NULL THEN '0000'
+	WHEN E.MGR LIKE '75%' THEN '5555'
+	WHEN E.MGR LIKE '76%' THEN '6666'
+	WHEN E.MGR LIKE '77%' THEN '7777'
+	WHEN E.MGR LIKE '78%' THEN '8888'
+	ELSE SUBSTR(TO_CHAR(E.MGR),1)
+	END AS CHG_MGR
+FROM EMP e ;
+
+
+-- 다중행 함수
+-- SUM(합계를 낼 열)
+-- DISTINCT : 중복제거
+
+SELECT SUM(SAL)
+FROM EMP e ;
+
+SELECT SUM(DISTINCT SAL), SUM(ALL SAL), SUM(SAL) 
+FROM EMP e ;
+
+SELECT COUNT(DISTINCT SAL), COUNT(ALL SAL), COUNT(SAL) 
+FROM EMP e ;
+
+SELECT MAX(SAL), MIN(SAL)
+FROM EMP e ;
+
+SELECT MAX(SAL), MIN(SAL)
+FROM EMP e 
+WHERE DEPTNO = 10 ;
+
+-- 부서번호가 20번인 사원의 최근 입사일 조회
+SELECT MAX(HIREDATE) 
+FROM EMP
+WHERE  DEPTNO =20;
+
+SELECT
+	MIN(HIREDATE)
+FROM
+	EMP e
+WHERE
+	DEPTNO = 20;
+
+SELECT AVG(DISTINCT SAL), AVG(ALL SAL), AVG(SAL) 
+FROM	EMP e ;
+
+-- 부서번호가 30번인 사원들의 평균 추가 수당
+SELECT AVG(COMM) 
+FROM EMP e 
+WHERE E.DEPTNO = 30 ;
+
+-- GROUP BY : 결과 값을 원하는 열로 묶어 출력
+-- GROUP BY 그룹화할 열 
+
+-- 각 부서별 평균 급여 출력
+SELECT DEPTNO, AVG(SAL)
+FROM EMP e 
+GROUP BY DEPTNO 
+ORDER BY DEPTNO ;
+
+-- 각 부서별, 직책별 평균 급여 출력
+SELECT DEPTNO, JOB, AVG(SAL)
+FROM EMP E
+GROUP BY DEPTNO, JOB 
+ORDER BY DEPTNO, JOB ;
+
+--GROUP BY 표현식이 아닙니다.(GROUP BY 절을 사용할 때에는 SELECT 절에서 사용할 수 있는 열이 제한 됨)
+--SELECT 가능 : GROUP BY 쓰여진 열, 다중행 함수
+--SELECT ENAME , AVG(SAL)
+--FROM EMP e 
+--GROUP BY DEPTNO ;
+
+
+--GROUP BY ~ HAVING : GROUP BY 절에 조건을 줄 때 사용
+-- 각 부서의 직책별평균 급여(평균 급여가 2000 이상인 그룹만 조회)
+SELECT DEPTNO, JOB, AVG(SAL)
+FROM EMP E
+GROUP BY DEPTNO, JOB 
+HAVING AVG(SAL) > = 2000 
+ORDER BY DEPTNO, JOB ;
+
+--ORA-00934:그룹 함수는 허가되지 않습니다
+--SELECT DEPTNO, JOB, AVG(SAL)
+--FROM EMP E
+--WHERE AVG(SAL) > = 2000 
+--GROUP BY DEPTNO, JOB 
+--ORDER BY DEPTNO, JOB ;
+
+-- 부서별, 평균급여, 최고급여, 최저급여, 사원 수 출력
+-- 평균급여 출력 시 소수점을 제외하고 출력
+SELECT DEPTNO, FLOOR(AVG(SAL)),MAX(SAL),MIN(SAL),COUNT(DEPTNO) 
+FROM EMP e 
+GROUP BY DEPTNO 
+ORDER BY DEPTNO ;
+
+-- 같은 직책에 종사하는 사원이 3명 이상인 직책과 인원수 출력
+SELECT E.JOB ,COUNT(E.JOB) 
+FROM EMP e 
+GROUP BY E.JOB 
+HAVING COUNT(E.JOB)>= 3
+ORDER BY COUNT(E.JOB);
+-- 사원들의 입사년도를 기준으로 부서별로 몇 명의 입사인원이 
+-- 있는지 출력
+-- 1987 20 2 (1987년도 20번 부서에 2명 입사)
+SELECT TO_CHAR(HIREDATE,'YYYY') AS HIRE_YEAR,DEPTNO , COUNT(*) AS CNT
+FROM EMP e 
+GROUP BY TO_CHAR(HIREDATE,'YYYY') ,DEPTNO 
+ORDER BY DEPTNO , HIRE_YEAR;
+
+-- JOIN(조인) : 두 개이상의 테이블을 연결하여 하나의 테이블처럼 출력
+-- 내부조인
+-- 	등가조인(★) : 테이블 연결 후 출력 행을 각 테이블의 특정 열에 일치한 데이터를 기준으로 선정
+--	비등가조인 : 
+-- 외부조인 
+ 
+--SELECT * FROM EMP, DEPT ;
+
+-- 1)내부조인
+-- 등가조인 : EMP 테이블의 DEPTNO와 DEPT 테이블의 DEPTNO 가 일치 시 연결
+
+--열의 정의가 애매합니다
+SELECT E.EMPNO ,E.ENAME ,D.DEPTNO ,D.DNAME ,D.LOC 
+FROM EMP e ,DEPT d 
+WHERE E.DEPTNO = D.DEPTNO; 
+
+
+
+
+
+
+
 
 
 
