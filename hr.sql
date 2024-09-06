@@ -214,13 +214,89 @@ ORDER BY
 	MANAGER_ID ;
 
 
+-- JOIN
+-- 자신의 담당 매니저의 고용일보다 빠른 입사자 찾기
+-- 사원번호, 입사일, 이름(last_name), 매니저아이디 출력
+-- self 조인
+SELECT
+	E.EMPLOYEE_ID,
+	E.HIRE_DATE,
+	E.LAST_NAME,
+	E2.EMPLOYEE_ID AS 매니저아이디
+FROM
+	EMPLOYEES e
+JOIN EMPLOYEES e2 ON
+	E.MANAGER_ID = E2.EMPLOYEE_ID
+	AND E.HIRE_DATE < E2.HIRE_DATE
+ORDER BY
+	E.EMPLOYEE_ID;
+-- 도시 이름이 T로 시작하는 지역에 사는 사원들의 정보 조회
+-- 사원번호, 이름(last_name), 부서번호, 지역명
+-- employees, department, locations 조인
+SELECT
+	E.EMPLOYEE_ID ,
+	E.LAST_NAME ,
+	D.DEPARTMENT_ID ,
+	L.CITY
+FROM
+	EMPLOYEES e
+JOIN DEPARTMENTS d ON
+	E.DEPARTMENT_ID = D.DEPARTMENT_ID
+JOIN LOCATIONS l ON
+	D.LOCATION_ID = L.LOCATION_ID
+WHERE
+	L.CITY LIKE 'T%';
+-- 각 부서별 사원 수, 평균 연봉(소수점 2자리까지) 조회
+-- 부서명, 부서위치아이디, 부서별 사원 수, 평균 연봉 출력
+SELECT
+	D.DEPARTMENT_NAME,
+	D.LOCATION_ID,
+	COUNT(D.DEPARTMENT_NAME) AS 부서별사원수 ,
+	ROUND(AVG(E.SALARY)) AS 평균연봉
+FROM
+	DEPARTMENTS d
+JOIN EMPLOYEES e ON
+	E.DEPARTMENT_ID = D.DEPARTMENT_ID
+GROUP BY
+	D.DEPARTMENT_NAME,
+	D.LOCATION_ID;
+-- Executive 부서에 근무하는 모든 사원들의 부서번호, 이름(last_name), job_id조회
+-- employees, department 조인
+SELECT E.DEPARTMENT_ID , E.LAST_NAME , E.JOB_ID 
+FROM EMPLOYEES e JOIN DEPARTMENTS d ON E.DEPARTMENT_ID = D.DEPARTMENT_ID 
+WHERE D.DEPARTMENT_ID = '90';
+
+-- 기존의 직무를 계속 하고 있는 사원 조회 
+-- 사원번호, job_id 출력
+-- employees, job_history 조인
+SELECT E.EMPLOYEE_ID ,e.JOB_ID 
+FROM EMPLOYEES e  JOIN JOB_HISTORY jh ON E.JOB_ID = JH.JOB_ID AND e.EMPLOYEE_ID  = JH.EMPLOYEE_ID; 
+
+-- 각 사원별 소속부서에서 자신보다 늦게 고용되었으나 많은 급여를 받는 사원의 정보 조회
+-- 부서번호 ,first_name 과 last_name 을 연결하여 출력, 급여, 입사일 출력
+-- employees self 조인
+SELECT  DISTINCT E.DEPARTMENT_ID,E.FIRST_NAME || E.LAST_NAME AS NAME , E.SALARY , E.HIRE_DATE ,E2.FIRST_NAME || E2.LAST_NAME AS NAME , E2.SALARY , E2.HIRE_DATE 
+FROM EMPLOYEES e JOIN EMPLOYEES e2 ON E.DEPARTMENT_ID = E2.DEPARTMENT_ID AND e.HIRE_DATE < e2.HIRE_DATE AND E.SALARY < E2.SALARY 
+ORDER BY E.DEPARTMENT_ID;
 
 
+-- 서브 쿼리로 작성
+-- Executive 부서에 근무하는 모든 사원들의 부서번호, 이름(last_name), job_id조회
 
-
-
-
-
+SELECT
+	E.DEPARTMENT_ID ,
+	E.LAST_NAME ,
+	E.JOB_ID
+FROM
+	EMPLOYEES e
+WHERE
+	(E.DEPARTMENT_ID,
+	'Executive') IN (
+	SELECT
+		d.department_id,
+		d.department_name
+	FROM
+		DEPARTMENTS d ) ;
 
 
 
