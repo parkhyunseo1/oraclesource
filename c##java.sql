@@ -145,6 +145,18 @@ CREATE TABLE board(
 -- 시퀀스 생성 board_seq
 CREATE  SEQUENCE board_seq;
 
+--board attach not null ==> null 가능 
+ALTER TABLE BOARD MODIFY ATTACH VARCHAR2(100) NULL;
+
+INSERT INTO BOARD(BNO,NAME,PASSWORD,TITLE,CONTENT,RE_REF,RE_LEV,RE_SEQ)
+VALUES(BOARD_SEQ.NEXTVAL,'hong','12345','board 작성','board 작성',board_seq.currval,0,0)
+
+SELECT * FROM BOARD b WHERE BNO=3;
+
+--수정
+-- bno와 password가 일치 시 title,content 수정
+UPDATE BOARD SET TITLE = '박현서', CONTENT ='박현서'WHERE BNO = 1 AND PASSWORD = 12345;
+SELECT * FROM BOARD;
 
 
 
