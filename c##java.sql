@@ -158,17 +158,62 @@ SELECT * FROM BOARD b WHERE BNO=3;
 UPDATE BOARD SET TITLE = '박현서', CONTENT ='박현서'WHERE BNO = 1 AND PASSWORD = 12345;
 SELECT * FROM BOARD;
 
+-- 조회수 업데이트
+UPDATE BOARD SET READCNT = READCNT+1 WHERE BNO = 3;
 
 
+-- 더미 데이터
+INSERT INTO BOARD(BNO,NAME,PASSWORD,TITLE,CONTENT,RE_REF,RE_LEV,RE_SEQ)
+(SELECT board_seq.nextval,name,password,title,content,board_seq.currval,RE_LEV,RE_SEQ FROM board);
+
+SELECT count(*) FROM board;
+
+-- 댓글처리
+
+-- 가장 최신글에 댓글 처리
+SELECT
+	*
+FROM
+	board
+WHERE
+	bno = (
+	SELECT
+		MAX(bno)
+	FROM
+		board);
+	
+-- 그룹 개념(re_ref)
+	
+-- 댓글 추가(re_ref : 부모글의 re_ref 넣어주기)
+-- RE_LEV : 부모글 RE_LEV+1
+-- RE_SEQ : 부모글 RE_SEQ+1
+INSERT INTO BOARD(BNO,NAME,PASSWORD,TITLE,CONTENT,RE_REF,RE_LEV,RE_SEQ)
+VALUES(BOARD_SEQ.NEXTVAL,'hong','12345','board 작성','board 작성',10243,0,0);
+
+UPDATE BOARD SET RE_LEV=1, RE_SEQ=1 WHERE BNO = 10244;
+
+-- 원본글과 댓글함께조회
+
+SELECT * FROM BOARD b WHERE RE_REF =10243;
+
+-- 두번째 댓글추가 (최신순 조회 : RE_SEQ)
+-- RE_SEQ 낮을수록 최신글
+
+-- 원본글
+-- ㄴ 댓글2
+--  ㄴ 댓글2의 댓글
+-- ㄴ 댓글1
+
+-- 댓글 2 추가
+-- 먼저 들어간 댓글이 있다면 RE_SEQ값을 +1 해야함
+-- UPDATE BOARD SET RE_SEQ = RE_SEQ + 1 WHERE RE_REF = 부모글 10243 AND RE_SEQ > 0; 
+UPDATE BOARD SET RE_SEQ = RE_SEQ + 1 WHERE RE_REF = 10243 AND RE_SEQ > 0; 
+
+INSERT INTO BOARD(BNO,NAME,PASSWORD,TITLE,CONTENT,RE_REF,RE_LEV,RE_SEQ)
+VALUES(BOARD_SEQ.NEXTVAL,'hong','12345','board 작성','board 작성',10243,1,1);
 
 
-
-
-
-
-
-
-
+SELECT * FROM BOARD b WHERE RE_REF =10243 ORDER BY RE_REF DESC, RE_SEQ ASC;
 
 
 
